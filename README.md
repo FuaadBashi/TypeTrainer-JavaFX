@@ -1,23 +1,56 @@
-# TypeTrainer — JavaFX Typing Practice
+# TypeTrainer
 
-A JavaFX desktop exercise that highlights correct and incorrect characters as you type, updates a progress bar, and advances through practice sentences.
+[![CI](https://github.com/FuaadBashi/TypeTrainer-JavaFX/actions/workflows/ci.yml/badge.svg)](https://github.com/FuaadBashi/TypeTrainer-JavaFX/actions/workflows/ci.yml)
 
-## Code to explore
+A JavaFX typing trainer. Type each practice sentence exactly: every character turns green or red
+as you go, and live words-per-minute and accuracy show how you're doing.
 
-- [App.java](App.java): UI construction, text-change listener, highlighting, and progress calculation.
-- [typeracer_texts.txt](typeracer_texts.txt): practice sentences.
-- [pom.xml](pom.xml): Maven dependencies and JavaFX launch configuration.
-- [module-info.java](module-info.java): module declarations.
+<p align="center"><img src="docs/screenshot.png" alt="TypeTrainer mid-sentence, with a typo highlighted in red" width="560"></p>
 
-## Setup status
+## Highlights
 
-The checkout currently stores Java files at the repository root, while the Maven file assumes the standard source layout. `App.java` also contains an absolute path to the original author's practice-text file.
+- **Logic separate from the UI.** `TypingSession` scores the input and knows nothing about
+  JavaFX. It reports each character's state, progress, completion, WPM and accuracy. The JavaFX
+  `App` just renders it.
+- **Honest metrics.** WPM is *net*: correct characters ÷ 5 per minute, timed from the first
+  keystroke. Accuracy counts every keystroke as typed, so a mistake still counts after you
+  backspace over it.
+- **Testable time.** The session takes its clock as a `Supplier<Instant>`, so speed calculations
+  are tested exactly.
+- **Lightweight rendering.** Highlighting uses a `TextFlow` of coloured `Text` nodes rather than
+  an embedded browser.
+- **Runs anywhere.** Practice sentences ship as a classpath resource, and the app is a proper
+  JPMS module launched with `mvn javafx:run`.
 
-To run it in a local JavaFX development environment:
+## Getting started
 
-1. Use JDK 17 or later and configure JavaFX Controls and Web modules.
-2. Import `App.java` as `typetrainer.App`.
-3. Update `exampleText` to the local path of `typeracer_texts.txt`.
-4. Launch `typetrainer.App` in a graphical desktop session.
+Requires JDK 17+ and Maven. JavaFX is downloaded as a Maven dependency.
 
-A reproducible Maven quick start still needs the source/resource layout and JavaFX versions aligned. The application currently measures character progress, not words per minute.
+```bash
+git clone https://github.com/FuaadBashi/TypeTrainer-JavaFX.git
+cd TypeTrainer-JavaFX
+mvn javafx:run
+```
+
+To practise your own sentences, edit
+[`practice-texts.txt`](src/main/resources/typetrainer/practice-texts.txt) (one per line).
+
+## Project structure
+
+```
+src/main/java/
+├── module-info.java
+└── typetrainer/
+    ├── App.java              JavaFX window and rendering
+    ├── TypingSession.java    per-character scoring, progress, WPM, accuracy
+    └── PracticeTexts.java    loads the bundled sentences
+src/main/resources/typetrainer/practice-texts.txt
+```
+
+## Tests
+
+```bash
+mvn verify
+```
+
+This runs the JUnit suite and checks formatting with google-java-format.
